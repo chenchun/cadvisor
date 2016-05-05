@@ -13,6 +13,7 @@
 
 GO := godep go
 pkgs  = $(shell $(GO) list ./...)
+build_image = cadvisor-build
 
 all: format build test
 
@@ -42,4 +43,9 @@ release: build
 docker:
 	@docker build -t cadvisor:$(shell git rev-parse --short HEAD) -f deploy/Dockerfile .
 
-.PHONY: all format build test vet docker
+docker-build:
+	@echo ">> building $(build_image) image"
+	@docker build -f Dockerfile -t $(build_image) .
+	@docker run -t -v $(shell pwd):/go/src/github.com/google/cadvisor $(build_image) make format build 
+
+.PHONY: all format build test vet docker docker-build
